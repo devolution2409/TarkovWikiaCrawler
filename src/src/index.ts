@@ -19,7 +19,7 @@ function paramsAsURI(object: object): string {
 
 
 
-function GetWeaponsCategories(): object {
+async function GetWeaponsCategories(): Promise<object> {
   let params: object = {
 
     action: 'query',
@@ -32,24 +32,22 @@ function GetWeaponsCategories(): object {
 
   };
   let ignore = ['ns', 'pageid'];
+  try {
+    // promise pending
+    // console.log(GetRequest(params, ignore));
+    let obj = await GetRequest(params, ignore);
+    return new Promise(resolve => resolve(obj));
 
-  GetRequest(params, ignore)
-      .then(obj => {
-        console.log(obj);
-      })
-      .catch(err => {
-        console.log(err);
-      });
-
-  return [];
+  } catch (e) {
+    return new Promise((resolve, reject) => {reject(e)});
+  }
 }
 
 
-function GetRequest(
-    params: object, toRemove: Array<string> = []): Promise<object> {
-  fetch(ENDPOINT + paramsAsURI(params), {
-    method: 'get',
-  })
+function GetRequest(params: object, toRemove: Array<string> = []): object {
+  return fetch(ENDPOINT + paramsAsURI(params), {
+           method: 'get',
+         })
       .then(res => res.json())  // transform res object to json object
       .then((obj) => {
         obj = obj.query.pages;
@@ -67,22 +65,18 @@ function GetRequest(
             }
           }
         }
-        console.log('before return ppHoppest');
-        console.log(obj);
-        return new Promise<object>(resolve => {
-          resolve(obj);
-        });
+        // console.log('before return ppHoppest');
+        // console.log(obj);
+        return obj;
       })
-      .catch(err => {
-        return new Promise<object>((resolve, reject) => {
-          reject(err);
-        });
+      .catch((err) => {
+        return err;
       });
-
-  return new Promise<object>((resolve, reject) => {
-    reject({'err': 'End of function reached'});
-  });
 }
 
 
-GetWeaponsCategories();
+
+// invoking async context pajaL
+(async function(): Promise<void> {
+  console.log(await GetWeaponsCategories());
+})();
